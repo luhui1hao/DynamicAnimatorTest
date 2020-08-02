@@ -3,147 +3,102 @@ package luhui1hao.xyz.dynamicanimatortest;
 import android.animation.TypeEvaluator;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
-import androidx.annotation.Nullable;
+import androidx.dynamicanimation.animation.DynamicAnimation;
+import androidx.dynamicanimation.animation.SpringAnimation;
 
-class DynamicAnimatorView extends View {
-    private Paint paint;
-    private Position destinationPosition;
-    private Position currentPosition;
-    private static final float RADIUS = dpToPixel(20);
+public class DynamicAnimatorView extends RelativeLayout {
+    private Context mContext;
+    private SpringAnimation animate1X;
+    private SpringAnimation animate1Y;
+    private ImageView ivLead;
+    private ImageView ivFollow;
+    private float mDampingRatio = 1.0f;
+    private float mStiffness = 15.0f;
+    private float startX;
+    private float startY;
+    private static final float RADIUS = dpToPixel(15);
 
     public DynamicAnimatorView(Context context) {
         super(context);
+        mContext = context;
+        initView();
     }
 
-    public DynamicAnimatorView(Context context, @Nullable AttributeSet attrs) {
+    public DynamicAnimatorView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mContext = context;
+        initView();
     }
 
-    public DynamicAnimatorView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public DynamicAnimatorView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        mContext = context;
+        initView();
     }
 
-    {
-        paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setColor(Color.parseColor("#03DAC5"));
-        paint.setStyle(Paint.Style.STROKE);
-    }
+    private void initView() {
+        View view = LayoutInflater.from(mContext).inflate(R.layout.layout_dynamic_animator_view, (ViewGroup) getParent(), false);
+        LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        view.setLayoutParams(params);
+        addView(view);
+        ivLead = view.findViewById(R.id.iv_lead);
+        ivFollow = view.findViewById(R.id.iv_follow);
 
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        animate1X = new SpringAnimation(ivFollow, DynamicAnimation.X, ivLead.getX());
+        animate1Y = new SpringAnimation(ivFollow, DynamicAnimation.Y, ivLead.getY());
+        animate1X.getSpring().setDampingRatio(mDampingRatio).setStiffness(mStiffness);
+        animate1Y.getSpring().setDampingRatio(mDampingRatio).setStiffness(mStiffness);
+
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        destinationPosition = new Position(RADIUS,RADIUS);
-        currentPosition = new Position(RADIUS,RADIUS);
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(dpToPixel(2));
-        canvas.drawRect(0, 0, getWidth(), getHeight(), paint);
-
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(dpToPixel(3));
-        canvas.drawCircle(destinationPosition.getX(), destinationPosition.getY(), RADIUS, paint);
-
-        paint.setStyle(Paint.Style.FILL);
-        canvas.drawCircle(currentPosition.getX(), currentPosition.getY(), RADIUS, paint);
+        startX = ivLead.getX();
+        startY = ivLead.getY();
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:{
-                destinationPosition.setX(event.getX());
-                destinationPosition.setY(event.getY());
-                invalidate();
-            }
-                break;
-            case MotionEvent.ACTION_MOVE:{
-                destinationPosition.setX(event.getX());
-                destinationPosition.setY(event.getY());
-                invalidate();
+                ivLead.setX(event.getX() - RADIUS);
+                ivLead.setY(event.getY() - RADIUS);
 
+                animate1X.animateToFinalPosition(ivLead.getX());
+                animate1Y.animateToFinalPosition(ivLead.getY());
+//                Log.e("luhui", "transtionX = " + ivLead.getTranslationX());
+            }
+            break;
+            case MotionEvent.ACTION_MOVE:{
 //                Log.e("luhui", "MOVE------"+destinationPosition.toString());
             }
-                break;
+            break;
             case MotionEvent.ACTION_UP:{
 //                ObjectAnimator animator = ObjectAnimator.ofObject(this, "currentPosition",
 //                        new PositionEvaluator(), new PointF(currentPosition.getX(), currentPosition.getY()), new PointF(destinationPosition.getX(), destinationPosition.getY()));
 //                animator.start();
             }
-                break;
+            break;
         }
         return true;
     }
-    
-    class Position{
-        private float x;
-        private float y;
 
-        public Position(float x, float y) {
-            this.x = x;
-            this.y = y;
-        }
 
-        public float getX() {
-            return x;
-        }
-
-        public void setX(float x) {
-            this.x = x;
-        }
-
-        public float getY() {
-            return y;
-        }
-
-        public void setY(float y) {
-            this.y = y;
-        }
-
-        @Override
-        public String toString() {
-            return "Position{" +
-                    "x=" + x +
-                    ", y=" + y +
-                    '}';
-        }
-    }
 
     public static float dpToPixel(float dp) {
         DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
         return dp * metrics.density;
-    }
-
-    private class PositionEvaluator implements TypeEvaluator<Position> {
-        Position newPoint = new Position(0,0);
-
-        @Override
-        public Position evaluate(float fraction, Position startValue, Position endValue) {
-            float x = startValue.x + (fraction * (endValue.x - startValue.x));
-            float y = startValue.y + (fraction * (endValue.y - startValue.y));
-
-            newPoint.setX(x);
-            newPoint.setY(y);
-
-            return newPoint;
-        }
     }
 }
