@@ -24,8 +24,6 @@ public class DynamicAnimatorView extends RelativeLayout {
     private ImageView ivFollow;
     private float mDampingRatio = 1.0f;
     private float mStiffness = 15.0f;
-    private float startX;
-    private float startY;
     private static final float RADIUS = dpToPixel(15);
 
     public DynamicAnimatorView(Context context) {
@@ -62,14 +60,6 @@ public class DynamicAnimatorView extends RelativeLayout {
     }
 
     @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-
-        startX = ivLead.getX();
-        startY = ivLead.getY();
-    }
-
-    @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
@@ -84,8 +74,6 @@ public class DynamicAnimatorView extends RelativeLayout {
         }
         return true;
     }
-
-
 
     public static float dpToPixel(float dp) {
         DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
