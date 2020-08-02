@@ -18,8 +18,8 @@ import androidx.dynamicanimation.animation.SpringAnimation;
 
 public class DynamicAnimatorView extends RelativeLayout {
     private Context mContext;
-    private SpringAnimation animate1X;
-    private SpringAnimation animate1Y;
+    private SpringAnimation animateX;
+    private SpringAnimation animateY;
     private ImageView ivLead;
     private ImageView ivFollow;
     private float mDampingRatio = 1.0f;
@@ -54,10 +54,10 @@ public class DynamicAnimatorView extends RelativeLayout {
         ivLead = view.findViewById(R.id.iv_lead);
         ivFollow = view.findViewById(R.id.iv_follow);
 
-        animate1X = new SpringAnimation(ivFollow, DynamicAnimation.X, ivLead.getX());
-        animate1Y = new SpringAnimation(ivFollow, DynamicAnimation.Y, ivLead.getY());
-        animate1X.getSpring().setDampingRatio(mDampingRatio).setStiffness(mStiffness);
-        animate1Y.getSpring().setDampingRatio(mDampingRatio).setStiffness(mStiffness);
+        animateX = new SpringAnimation(ivFollow, DynamicAnimation.X, ivLead.getX());
+        animateY = new SpringAnimation(ivFollow, DynamicAnimation.Y, ivLead.getY());
+        animateX.getSpring().setDampingRatio(mDampingRatio).setStiffness(mStiffness);
+        animateY.getSpring().setDampingRatio(mDampingRatio).setStiffness(mStiffness);
 
     }
 
@@ -72,23 +72,13 @@ public class DynamicAnimatorView extends RelativeLayout {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()){
-            case MotionEvent.ACTION_DOWN:{
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_MOVE:{
                 ivLead.setX(event.getX() - RADIUS);
                 ivLead.setY(event.getY() - RADIUS);
 
-                animate1X.animateToFinalPosition(ivLead.getX());
-                animate1Y.animateToFinalPosition(ivLead.getY());
-//                Log.e("luhui", "transtionX = " + ivLead.getTranslationX());
-            }
-            break;
-            case MotionEvent.ACTION_MOVE:{
-//                Log.e("luhui", "MOVE------"+destinationPosition.toString());
-            }
-            break;
-            case MotionEvent.ACTION_UP:{
-//                ObjectAnimator animator = ObjectAnimator.ofObject(this, "currentPosition",
-//                        new PositionEvaluator(), new PointF(currentPosition.getX(), currentPosition.getY()), new PointF(destinationPosition.getX(), destinationPosition.getY()));
-//                animator.start();
+                animateX.animateToFinalPosition(ivLead.getX());
+                animateY.animateToFinalPosition(ivLead.getY());
             }
             break;
         }
